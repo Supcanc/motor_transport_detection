@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from pathlib import Path
 
 BASE_URL = 'http://127.0.0.1:8000'
 
@@ -14,7 +15,7 @@ model_version = st.selectbox(
 )
 
 uploaded_files = st.file_uploader(
-    'Choose a directory that contains all the images you want to make prediction of.',
+    'Choose a directory that contains all the images you want to make prediction of',
     type=['image/*'],
     accept_multiple_files='directory'
 )
@@ -34,10 +35,17 @@ if st.button('Make prediction') and uploaded_files:
             ]
         )
 
-    response = requests.post(
+    prediction_response = requests.post(
         f'{BASE_URL}/prediction/',
         data={'model_version': model_version},
         files=files
     )
 
-    st.write(response.json())
+    if prediction_response.status_code == 200:
+        for pred in prediction_response.json()['results'].keys():
+            file_name = Path(pred).name
+            st.image(pred, caption=file_name)
+    else:
+        st.error(f'Error while making prediction:\n{prediction_response.json().get('detail')}')
+
+    tmp_dir_deletion_response = requests.get(f'{BASE_URL}/rm_tmp_dir/')
