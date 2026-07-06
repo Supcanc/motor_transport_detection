@@ -1,3 +1,5 @@
 # venv
 motor_transport_detection/
 
+# cache
+backend/__pycache__/
