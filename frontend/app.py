@@ -54,26 +54,26 @@ if st.button('Make prediction') and uploaded_files:
     if prediction_response.status_code == 200:
         preds = prediction_response.json()['results']
 
-        annots_dir_path = Path('annots')
-        annots_dir_path.mkdir(parents=True, exist_ok=True)
+        results_dir_path = Path('results')
+        results_dir_path.mkdir(parents=True, exist_ok=True)
 
         for file_path in preds.keys():
             file_name = Path(file_path).name
             file_stem = Path(file_path).stem
-            with open(os.path.join(annots_dir_path, file_stem + '.txt'), 'w') as f:
+            with open(os.path.join(results_dir_path, file_stem + '.txt'), 'w') as f:
                 f.write('x y x y confidence class_id\n')
                 for obj in preds[file_path]:
                     f.write(f'{" ".join(str(item) for item in obj)}\n')
 
-        shutil.make_archive('annots', 'zip', annots_dir_path)
+        shutil.make_archive('results', 'zip', results_dir_path)
 
-        shutil.rmtree(annots_dir_path)
+        shutil.rmtree(results_dir_path)
         
-        with open('annots.zip', 'rb') as f:
+        with open('results.zip', 'rb') as f:
             st.download_button(
                 label="Download all annotations",
                 data=f,
-                file_name="annots.zip",
+                file_name="results.zip",
                 mime="application/zip",
             )
 
