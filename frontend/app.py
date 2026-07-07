@@ -71,7 +71,7 @@ if st.button('Make prediction') and uploaded_files:
         
         with open('results.zip', 'rb') as f:
             st.download_button(
-                label="Download all annotations",
+                label="Download results",
                 data=f,
                 file_name="results.zip",
                 mime="application/zip",
