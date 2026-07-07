@@ -66,6 +66,9 @@ if st.button('Make prediction') and uploaded_files:
                     f.write(f'{" ".join(str(item) for item in obj)}\n')
 
         shutil.make_archive('annots', 'zip', annots_dir_path)
+
+        shutil.rmtree(annots_dir_path)
+        
         with open('annots.zip', 'rb') as f:
             st.download_button(
                 label="Download all annotations",
