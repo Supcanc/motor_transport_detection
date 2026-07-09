@@ -29,7 +29,7 @@ def get_prediction(model_version, files):
 
     try:
         for file in files:
-            image = Image.open(file['filename'])
+            image = Image.open(file['file'])
             result = model(image, imgsz=INFERENCE_IMAGE_SIZE)[0]
             image_path = os.path.join(tmp_dir, os.path.basename(file['filename']))
             result.save(filename=image_path)
