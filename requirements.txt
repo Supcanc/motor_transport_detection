@@ -1,3 +1,1 @@
-opencv-python-headless==5.0.0.93
-ultralytics==8.4.87
-pi_heif==1.4.0
+ultralytics
