@@ -66,7 +66,7 @@ if st.button('Make prediction') and uploaded_files:
                 file_stem = Path(file_path).stem
                 file_suffix = Path(file_path).suffix
 
-                file_dir = Path(os.path.join(results_dir_path, file_name))
+                file_dir = Path(os.path.join(results_dir_path, file_stem))
                 file_dir.mkdir(parents=True, exist_ok=True)
 
                 with open(os.path.join(file_dir, file_stem + '.txt'), 'w') as f:
