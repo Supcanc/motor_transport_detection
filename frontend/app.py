@@ -1,10 +1,12 @@
 import streamlit as st
-import requests
 from pathlib import Path
 import os
 import shutil
+import sys
 
-BASE_URL = 'http://127.0.0.1:8000'
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from backend.main import get_prediction, rm_tmp_dir
 
 st.title('Motor Transport Detection')
 
@@ -35,52 +37,68 @@ if st.button('Make prediction') and uploaded_files:
 
     for file in uploaded_files:
         files.append(
-            [
-                'files',
-                [
-                    file.name,
-                    file,
-                    file.type
-                ]
-            ]
+            {
+                'filename': file.name,
+                'file': file,
+                'filetype': file.type
+            }
         )
 
-    prediction_response = requests.post(
-        f'{BASE_URL}/prediction/',
-        data={'model_version': model_version},
+    prediction_response = get_prediction(
+        model_version=model_version,
         files=files
     )
-
-    if prediction_response.status_code == 200:
-        preds = prediction_response.json()['results']
+    if prediction_response['status'] == 'failed':
+        st.error(prediction_response['details'])
+    else:
+        preds = prediction_response['results']
 
         results_dir_path = Path('results')
-        results_dir_path.mkdir(parents=True, exist_ok=True)
 
-        for file_path in preds.keys():
-            file_name = Path(file_path).name
-            file_stem = Path(file_path).stem
-            with open(os.path.join(results_dir_path, file_stem + '.txt'), 'w') as f:
-                f.write('x y x y confidence class_id\n')
-                for obj in preds[file_path]:
-                    f.write(f'{" ".join(str(item) for item in obj)}\n')
+        try:
+            results_dir_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            st.error(f'An error occurred during making directory for predictions. Details:\n{e}')
 
-        shutil.make_archive('results', 'zip', results_dir_path)
+        try:
+            for file_path in preds.keys():
+                file_name = Path(file_path).name
+                file_stem = Path(file_path).stem
+                with open(os.path.join(results_dir_path, file_stem + '.txt'), 'w') as f:
+                    f.write('x y x y confidence class_id\n')
+                    for obj in preds[file_path]:
+                        f.write(f'{" ".join(str(item) for item in obj)}\n')
+        except Exception as e:
+            st.error(f'An error occurred during writing predictions results to files. Details:\n{e}')
 
-        shutil.rmtree(results_dir_path)
+        try:
+            shutil.make_archive('results', 'zip', results_dir_path)
+        except Exception as e:
+            st.error(f'An error occurred during making predictions archive. Details:\n{e}')
+
+        try:
+            shutil.rmtree(results_dir_path)
+        except Exception as e:
+            st.error(f'An error occurred during removing predictions directory. Details:\n{e}')
         
-        with open('results.zip', 'rb') as f:
-            st.download_button(
-                label="Download results",
-                data=f,
-                file_name="results.zip",
-                mime="application/zip",
-            )
+        try:
+            with open('results.zip', 'rb') as f:
+                st.download_button(
+                    label="Download results",
+                    data=f,
+                    file_name="results.zip",
+                    mime="application/zip",
+                )
+        except Exception as e:
+            st.error(f'An error occurred during opening archive and pressing download button. Details:\n{e}')
 
-        for file_path in preds.keys():
-            file_name = Path(file_path).name
-            st.image(file_path, caption=file_name)
-    else:
-        st.error(f'Error while making prediction:\n{prediction_response.json().get('detail')}')
+        try:
+            for file_path in preds.keys():
+                file_name = Path(file_path).name
+                st.image(file_path, caption=file_name)
+        except Exception as e:
+            st.error(f'An error occurred during drawing images predictions. Details:\n{e}')
 
-    tmp_dir_deletion_response = requests.get(f'{BASE_URL}/rm_tmp_dir/')
+        tmp_dir_deletion_response = rm_tmp_dir()
+        if tmp_dir_deletion_response['status'] == 'failed':
+            st.error(tmp_dir_deletion_response['details'])
