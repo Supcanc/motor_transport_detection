@@ -66,12 +66,15 @@ if st.button('Make prediction') and uploaded_files:
                 file_stem = Path(file_path).stem
                 file_suffix = Path(file_path).suffix
 
-                with open(os.path.join(results_dir_path, file_stem + '.txt'), 'w') as f:
+                file_dir = Path(os.path.join(results_dir_path, file_name))
+                file_dir.mkdir(parents=True, exist_ok=True)
+
+                with open(os.path.join(file_dir, file_stem + '.txt'), 'w') as f:
                     f.write('x y x y confidence class_id\n')
                     for obj in preds[file_path]:
                         f.write(f'{" ".join(str(item) for item in obj)}\n')
 
-                shutil.copy(file_path, os.path.join(results_dir_path, 'predicted_image', file_suffix))
+                shutil.copy(file_path, os.path.join(file_dir, 'predicted_image' + file_suffix))
         except Exception as e:
             st.error(f'An error occurred during writing predictions results to files. Details:\n{e}')
 
