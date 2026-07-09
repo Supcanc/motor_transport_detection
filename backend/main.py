@@ -9,9 +9,9 @@ INFERENCE_IMAGE_SIZE = 1280
 def get_prediction(model_version, files):
     try:
         if model_version == 'Standard':
-            model = YOLO('../training_results/yolo26n_1280/best_weights.pt')
+            model = YOLO('training_results/yolo26n_1280/best_weights.pt')
         else:
-            model = YOLO('../training_results/yolo26s_1280/best_weights.pt')
+            model = YOLO('training_results/yolo26s_1280/best_weights.pt')
     except Exception as e:
         return {
             'status': 'failed',
